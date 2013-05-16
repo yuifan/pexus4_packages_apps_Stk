@@ -27,8 +27,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.internal.telephony.gsm.stk.TextMessage;
-import com.android.internal.telephony.gsm.stk.ToneSettings;
+import com.android.internal.telephony.cat.TextMessage;
+import com.android.internal.telephony.cat.ToneSettings;
 
 /**
  * Activity used for PLAY TONE command.
@@ -38,6 +38,7 @@ public class ToneDialog extends Activity {
     TextMessage toneMsg = null;
     ToneSettings settings = null;
     TonePlayer player = null;
+    boolean mIsResponseSent = false;
 
     /**
      * Handler used to stop tones from playing when the duration ends.
@@ -54,7 +55,7 @@ public class ToneDialog extends Activity {
         }
     };
 
-    Vibrator mVibrator = new Vibrator();
+    Vibrator mVibrator;
 
     // Message id to signal tone duration timeout.
     private static final int MSG_ID_STOP_TONE = 0xda;
@@ -63,7 +64,9 @@ public class ToneDialog extends Activity {
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
-       initFromIntent(getIntent());
+        mVibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
+
+        initFromIntent(getIntent());
 
         // remove window title
         View title = findViewById(com.android.internal.R.id.title);
@@ -98,8 +101,9 @@ public class ToneDialog extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        mToneStopper.removeMessages(MSG_ID_STOP_TONE);
+        if (mIsResponseSent) {
+            mToneStopper.removeMessages(MSG_ID_STOP_TONE);
+        }
         player.stop();
         player.release();
         mVibrator.cancel();
@@ -129,5 +133,6 @@ public class ToneDialog extends Activity {
         args.putInt(StkAppService.OPCODE, StkAppService.OP_RESPONSE);
         args.putInt(StkAppService.RES_ID, resId);
         startService(new Intent(this, StkAppService.class).putExtras(args));
+        mIsResponseSent = true;
     }
 }

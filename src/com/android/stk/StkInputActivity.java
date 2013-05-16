@@ -36,9 +36,8 @@ import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.TextView.BufferType;
 
-import com.android.internal.telephony.gsm.stk.FontSize;
-import com.android.internal.telephony.gsm.stk.Input;
-import com.android.internal.telephony.gsm.stk.StkLog;
+import com.android.internal.telephony.cat.FontSize;
+import com.android.internal.telephony.cat.Input;
 
 /**
  * Display a request for a text input a long with a text edit form.
@@ -257,9 +256,14 @@ public class StkInputActivity extends Activity implements View.OnClickListener,
     }
 
     private void startTimeOut() {
+        int duration = StkApp.calculateDurationInMilis(mStkInput.duration);
+
+        if (duration <= 0) {
+            duration = StkApp.UI_TIMEOUT;
+        }
         cancelTimeOut();
         mTimeoutHandler.sendMessageDelayed(mTimeoutHandler
-                .obtainMessage(MSG_ID_TIMEOUT), StkApp.UI_TIMEOUT);
+                .obtainMessage(MSG_ID_TIMEOUT), duration);
     }
 
     private void configInputDisplay() {
